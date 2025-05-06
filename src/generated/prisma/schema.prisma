@@ -1,0 +1,508 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model achievements {
+  achievement_id   Int           @id @default(autoincrement())
+  user_id          Int?
+  event_id         Int?
+  achievement_type String?       @db.VarChar(50)
+  points_awarded   Int?
+  earned_date      DateTime?     @default(now()) @db.Timestamp(6)
+  competitions     competitions? @relation(fields: [event_id], references: [competition_id], onDelete: NoAction, onUpdate: NoAction)
+  users            users?        @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model auction_bids {
+  bid_id        Int          @id @default(autoincrement())
+  listing_id    Int?
+  user_id       Int?
+  bid_amount    Decimal?     @db.Decimal(10, 2)
+  currency      String?      @db.VarChar(50)
+  bid_date      DateTime?    @default(now()) @db.Timestamp(6)
+  status        String?      @db.VarChar(50)
+  is_accepted   Boolean?     @default(false)
+  accepted_date DateTime?    @db.Timestamp(6)
+  marketplace   marketplace? @relation(fields: [listing_id], references: [listing_id], onDelete: NoAction, onUpdate: NoAction)
+  users         users?       @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model avatar_animations {
+  animation_id    Int               @id @default(autoincrement())
+  animation_name  String?           @db.VarChar(100)
+  animation_file  String?
+  cost            Decimal?          @db.Decimal(10, 2)
+  is_premium      Boolean?          @default(false)
+  date_created    DateTime?         @default(now()) @db.Timestamp(6)
+  is_active       Boolean?          @default(true)
+  user_avatar_inv user_avatar_inv[]
+}
+
+model avatar_assets {
+  asset_id        Int               @id @default(autoincrement())
+  asset_type      String?           @db.VarChar(50)
+  asset_name      String?           @db.VarChar(100)
+  color_options   String?
+  cost            Decimal?          @db.Decimal(10, 2)
+  is_premium      Boolean?          @default(false)
+  date_created    DateTime?         @default(now()) @db.Timestamp(6)
+  is_active       Boolean?          @default(true)
+  user_avatar_inv user_avatar_inv[]
+}
+
+model avatar_cust {
+  cust_id            Int       @id @default(autoincrement())
+  user_id            Int?
+  skin_tone          String?   @db.VarChar(50)
+  hair_color         String?   @db.VarChar(50)
+  hair_type          String?   @db.VarChar(50)
+  glasses_id         Int?
+  hat_id             Int?
+  eye_color          String?   @db.VarChar(50)
+  eye_shape_id       Int?
+  shirt_id           Int?
+  jacket_id          Int?
+  pants_id           Int?
+  shoes_id           Int?
+  animation_id       Int?
+  emote_id           Int?
+  spcfx_id           Int?
+  last_modified_date DateTime? @default(now()) @db.Timestamp(6)
+  users              users?    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model avatar_emotes {
+  emote_id        Int               @id @default(autoincrement())
+  emote_name      String?           @db.VarChar(100)
+  emote_file      String?
+  cost            Decimal?          @db.Decimal(10, 2)
+  is_premium      Boolean?          @default(false)
+  date_created    DateTime?         @default(now()) @db.Timestamp(6)
+  is_active       Boolean?          @default(true)
+  user_avatar_inv user_avatar_inv[]
+}
+
+model avatar_spcfx {
+  spcfx_id        Int               @id @default(autoincrement())
+  spcfx_name      String?           @db.VarChar(100)
+  spcfx_type      String?           @db.VarChar(50)
+  spcfx_file      String?
+  cost            Decimal?          @db.Decimal(10, 2)
+  is_premium      Boolean?          @default(false)
+  date_created    DateTime?         @default(now()) @db.Timestamp(6)
+  is_active       Boolean?          @default(true)
+  user_avatar_inv user_avatar_inv[]
+}
+
+model competitions {
+  competition_id Int            @id @default(autoincrement())
+  name           String?        @db.VarChar(100)
+  description    String?
+  start_date     DateTime?      @db.Date
+  end_date       DateTime?      @db.Date
+  event_type     String?        @db.VarChar(50)
+  status         String?        @db.VarChar(50)
+  created_by     Int?
+  achievements   achievements[]
+  users          users?         @relation(fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  leaderboards   leaderboards[]
+  transactions   transactions[]
+  user_scores    user_scores[]
+}
+
+model custom_widgets {
+  widget_id          Int            @id @default(autoincrement())
+  widget_name        String?        @db.VarChar(100)
+  description        String?
+  widget_type        String?        @db.VarChar(50)
+  widget_file        String?
+  is_limited_edition Boolean?       @default(false)
+  available_from     DateTime?      @db.Timestamp(6)
+  available_to       DateTime?      @db.Timestamp(6)
+  win_conditions     String?
+  fiat_price         Decimal?       @db.Decimal(10, 2)
+  site_coin_price    Decimal?       @db.Decimal(10, 2)
+  points_price       Int?
+  is_purchasable     Boolean?       @default(true)
+  date_created       DateTime?      @default(now()) @db.Timestamp(6)
+  user_widgets       user_widgets[]
+}
+
+model leaderboards {
+  leaderboard_id Int           @id @default(autoincrement())
+  user_id        Int?
+  competition_id Int?
+  score          Int?
+  rank           Int?
+  overall_score  Int?
+  overall_rank   Int?
+  competitions   competitions? @relation(fields: [competition_id], references: [competition_id], onDelete: NoAction, onUpdate: NoAction)
+  users          users?        @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model lookup_type {
+  lookup_type_id   Int             @id @default(autoincrement())
+  type_name        String?         @db.VarChar(100)
+  type_code        String?         @db.VarChar(50)
+  type_description String?
+  fee_percentage   Decimal?        @db.Decimal(5, 2)
+  is_visible       Boolean?        @default(true)
+  created_date     DateTime?       @default(now()) @db.Timestamp(6)
+  modified_date    DateTime?       @default(now()) @db.Timestamp(6)
+  modified_by      Int?
+  users            users?          @relation(fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  lookup_values    lookup_values[]
+}
+
+model lookup_values {
+  lookup_id      Int          @id @default(autoincrement())
+  lookup_type_id Int?
+  value_code     String?      @db.VarChar(50)
+  value          String?      @db.VarChar(100)
+  sort_order     Int?
+  is_visible     Boolean?     @default(true)
+  is_editable    Boolean?     @default(true)
+  is_active      Boolean?     @default(true)
+  created_date   DateTime?    @default(now()) @db.Timestamp(6)
+  modified_date  DateTime?    @default(now()) @db.Timestamp(6)
+  modified_by    Int?
+  lookup_type    lookup_type? @relation(fields: [lookup_type_id], references: [lookup_type_id], onDelete: NoAction, onUpdate: NoAction)
+  users          users?       @relation(fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model market_items {
+  item_id           Int       @id @default(autoincrement())
+  item_type         String?   @db.VarChar(50)
+  item_reference_id Int?
+  owner_id          Int?
+  is_listed         Boolean?  @default(false)
+  is_locked         Boolean?  @default(false)
+  created_date      DateTime? @default(now()) @db.Timestamp(6)
+  users             users?    @relation(fields: [owner_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model marketplace {
+  listing_id                              Int                 @id @default(autoincrement())
+  seller_user_id                          Int?
+  item_type                               String?             @db.VarChar(50)
+  item_id                                 Int?
+  sale_type                               String?             @db.VarChar(50)
+  is_trade                                Boolean?
+  trade_preferences                       String?
+  start_price                             Decimal?            @db.Decimal(10, 2)
+  reserve_price                           Decimal?            @db.Decimal(10, 2)
+  buy_now_price                           Decimal?            @db.Decimal(10, 2)
+  points                                  Int?
+  start_time                              DateTime?           @db.Timestamp(6)
+  end_time                                DateTime?           @db.Timestamp(6)
+  final_price                             Decimal?            @db.Decimal(10, 2)
+  buyer_user_id                           Int?
+  nft_trade                               Boolean?
+  nft_token_id                            Int?
+  listing_status                          String?             @db.VarChar(50)
+  created_at                              DateTime?           @default(now()) @db.Timestamp(6)
+  updated_at                              DateTime?           @default(now()) @db.Timestamp(6)
+  auction_bids                            auction_bids[]
+  users_marketplace_buyer_user_idTousers  users?              @relation("marketplace_buyer_user_idTousers", fields: [buyer_user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_marketplace_seller_user_idTousers users?              @relation("marketplace_seller_user_idTousers", fields: [seller_user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  marketplace_trans                       marketplace_trans[]
+}
+
+model marketplace_trans {
+  transaction_id                           Int          @id @default(autoincrement())
+  listing_id                               Int?
+  seller_id                                Int?
+  buyer_id                                 Int?
+  payment_type                             String?      @db.VarChar(50)
+  payment_amount                           Decimal?     @db.Decimal(10, 2)
+  trade_item_id                            Int?
+  transaction_status                       String?      @db.VarChar(50)
+  created_at                               DateTime?    @default(now()) @db.Timestamp(6)
+  users_marketplace_trans_buyer_idTousers  users?       @relation("marketplace_trans_buyer_idTousers", fields: [buyer_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  marketplace                              marketplace? @relation(fields: [listing_id], references: [listing_id], onDelete: NoAction, onUpdate: NoAction)
+  users_marketplace_trans_seller_idTousers users?       @relation("marketplace_trans_seller_idTousers", fields: [seller_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model nft_meta {
+  nft_id       Int       @id @default(autoincrement())
+  user_id      Int?
+  token_id     String?   @db.VarChar(100)
+  metadata_url String?
+  is_tradeable Boolean?  @default(true)
+  created_date DateTime? @default(now()) @db.Timestamp(6)
+  users        users?    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model notifications {
+  notification_id Int       @id @default(autoincrement())
+  user_id         Int?
+  message         String?
+  is_read         Boolean?  @default(false)
+  trans_type      String?   @db.VarChar(50)
+  date_created    DateTime? @default(now()) @db.Timestamp(6)
+  users           users?    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model social_comments {
+  comment_id   Int           @id @default(autoincrement())
+  post_id      Int?
+  user_id      Int?
+  comment_text String?
+  image_url    String?
+  created_date DateTime?     @default(now()) @db.Timestamp(6)
+  social_posts social_posts? @relation(fields: [post_id], references: [post_id], onDelete: NoAction, onUpdate: NoAction)
+  users        users?        @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model social_likes {
+  post_id      Int
+  user_id      Int
+  liked_at     DateTime?    @default(now()) @db.Timestamp(6)
+  social_posts social_posts @relation(fields: [post_id], references: [post_id], onDelete: NoAction, onUpdate: NoAction)
+  users        users        @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([post_id, user_id])
+}
+
+model social_posts {
+  post_id         Int               @id @default(autoincrement())
+  user_id         Int?
+  content         String?
+  image_url       String?
+  created_date    DateTime?         @default(now()) @db.Timestamp(6)
+  social_comments social_comments[]
+  social_likes    social_likes[]
+  users           users?            @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model support {
+  ticket_id     Int       @id @default(autoincrement())
+  user_id       Int?
+  category      String?   @db.VarChar(50)
+  description   String?
+  status        String?   @db.VarChar(50)
+  status_update DateTime? @db.Timestamp(6)
+  created_date  DateTime? @default(now()) @db.Timestamp(6)
+  closed_date   DateTime? @db.Timestamp(6)
+  users         users?    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model system_settings {
+  setting_id                               Int       @id @default(autoincrement())
+  setting_name                             String?   @db.VarChar(100)
+  setting_code                             String?   @db.VarChar(50)
+  description                              String?
+  value                                    String?
+  data_type                                String?   @db.VarChar(50)
+  is_editable                              Boolean?  @default(true)
+  created_date                             DateTime? @default(now()) @db.Timestamp(6)
+  created_by                               Int?
+  modified_date                            DateTime? @default(now()) @db.Timestamp(6)
+  modified_by                              Int?
+  users_system_settings_created_byTousers  users?    @relation("system_settings_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_system_settings_modified_byTousers users?    @relation("system_settings_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model team_members {
+  team_id        Int
+  user_id        Int
+  team_role_type String?   @db.VarChar(50)
+  status         String?   @db.VarChar(50)
+  last_update    DateTime? @default(now()) @db.Timestamp(6)
+  teams          teams     @relation(fields: [team_id], references: [teams_id], onDelete: NoAction, onUpdate: NoAction)
+  users          users     @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([team_id, user_id])
+}
+
+model teams {
+  teams_id                      Int            @id @default(autoincrement())
+  team_name                     String?        @db.VarChar(100)
+  created_by                    Int?
+  created_date                  DateTime?      @default(now()) @db.Timestamp(6)
+  updated_by                    Int?
+  is_active                     Boolean?       @default(true)
+  team_colors                   String?        @db.VarChar(100)
+  team_mascot                   String?        @db.VarChar(100)
+  team_members                  team_members[]
+  users_teams_created_byTousers users?         @relation("teams_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_teams_updated_byTousers users?         @relation("teams_updated_byTousers", fields: [updated_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model transactions {
+  transactions_id Int           @id @default(autoincrement())
+  user_id         Int?
+  asset_id        Int?
+  competition_id  Int?
+  animation_id    Int?
+  emote_id        Int?
+  spcfx_id        Int?
+  widget_id       Int?
+  trans_amt       Decimal?      @db.Decimal(10, 2)
+  trans_type      String?       @db.VarChar(50)
+  amt_fiat        Decimal?      @db.Decimal(10, 2)
+  amt_crypto      Decimal?      @db.Decimal(10, 2)
+  crypto_type     String?       @db.VarChar(50)
+  fee_applied     Decimal?      @db.Decimal(10, 2)
+  status          String?       @db.VarChar(50)
+  trans_date      DateTime?     @default(now()) @db.Timestamp(6)
+  competitions    competitions? @relation(fields: [competition_id], references: [competition_id], onDelete: NoAction, onUpdate: NoAction)
+  users           users?        @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_avatar_inv {
+  inventory_id      Int                @id @default(autoincrement())
+  user_id           Int?
+  asset_id          Int?
+  animation_id      Int?
+  emote_id          Int?
+  spcfx_id          Int?
+  purchased_date    DateTime?          @default(now()) @db.Timestamp(6)
+  avatar_animations avatar_animations? @relation(fields: [animation_id], references: [animation_id], onDelete: NoAction, onUpdate: NoAction)
+  avatar_assets     avatar_assets?     @relation(fields: [asset_id], references: [asset_id], onDelete: NoAction, onUpdate: NoAction)
+  avatar_emotes     avatar_emotes?     @relation(fields: [emote_id], references: [emote_id], onDelete: NoAction, onUpdate: NoAction)
+  avatar_spcfx      avatar_spcfx?      @relation(fields: [spcfx_id], references: [spcfx_id], onDelete: NoAction, onUpdate: NoAction)
+  users             users?             @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_friends {
+  friendship_id                       Int       @id @default(autoincrement())
+  user_id                             Int?
+  friend_id                           Int?
+  status                              String?   @db.VarChar(50)
+  created_date                        DateTime? @default(now()) @db.Timestamp(6)
+  users_user_friends_friend_idTousers users?    @relation("user_friends_friend_idTousers", fields: [friend_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_user_friends_user_idTousers   users?    @relation("user_friends_user_idTousers", fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_messages {
+  message_id                             Int       @id @default(autoincrement())
+  sender_id                              Int?
+  receiver_id                            Int?
+  msg_content                            String?
+  created_date                           DateTime? @default(now()) @db.Timestamp(6)
+  is_read                                Boolean?  @default(false)
+  users_user_messages_receiver_idTousers users?    @relation("user_messages_receiver_idTousers", fields: [receiver_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_user_messages_sender_idTousers   users?    @relation("user_messages_sender_idTousers", fields: [sender_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_roles {
+  role_id                             Int       @id @default(autoincrement())
+  role_name                           String?   @db.VarChar(100)
+  permissions                         String?
+  created_date                        DateTime? @default(now()) @db.Timestamp(6)
+  created_by                          Int?
+  modified_date                       DateTime? @default(now()) @db.Timestamp(6)
+  modified_by                         Int?
+  users_user_roles_created_byTousers  users?    @relation("user_roles_created_byTousers", fields: [created_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_user_roles_modified_byTousers users?    @relation("user_roles_modified_byTousers", fields: [modified_by], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_users_role_idTouser_roles     users[]   @relation("users_role_idTouser_roles")
+}
+
+model user_scores {
+  score_id       Int           @id @default(autoincrement())
+  user_id        Int?
+  competition_id Int?
+  score          Int?
+  created_at     DateTime?     @default(now()) @db.Timestamp(6)
+  competitions   competitions? @relation(fields: [competition_id], references: [competition_id], onDelete: NoAction, onUpdate: NoAction)
+  users          users?        @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_settings {
+  setting_id      Int     @id @default(autoincrement())
+  user_id         Int?
+  setting_key     String? @db.VarChar(50)
+  setting_value   String?
+  theme           String? @db.VarChar(50)
+  privacy_code    String? @db.VarChar(50)
+  profile_picture String?
+  users           users?  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_widgets {
+  user_widgets_id  Int             @id @default(autoincrement())
+  user_id          Int?
+  widget_id        Int?
+  obtained_method  String?         @db.VarChar(50)
+  obtained_date    DateTime?       @default(now()) @db.Timestamp(6)
+  display_position Int?
+  is_active        Boolean?        @default(true)
+  users            users?          @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  custom_widgets   custom_widgets? @relation(fields: [widget_id], references: [widget_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model users {
+  user_id                                              Int                 @id @default(autoincrement())
+  username                                             String              @unique @db.VarChar(50)
+  email                                                String              @unique @db.VarChar(100)
+  password_hash                                        String
+  created_at                                           DateTime?           @default(now()) @db.Timestamp(6)
+  profile_picture                                      String?
+  bio                                                  String?
+  role_id                                              Int?
+  updated_at                                           DateTime?           @default(now()) @db.Timestamp(6)
+  is_active                                            Boolean?            @default(true)
+  achievements                                         achievements[]
+  auction_bids                                         auction_bids[]
+  avatar_cust                                          avatar_cust[]
+  competitions                                         competitions[]
+  leaderboards                                         leaderboards[]
+  lookup_type                                          lookup_type[]
+  lookup_values                                        lookup_values[]
+  market_items                                         market_items[]
+  marketplace_marketplace_buyer_user_idTousers         marketplace[]       @relation("marketplace_buyer_user_idTousers")
+  marketplace_marketplace_seller_user_idTousers        marketplace[]       @relation("marketplace_seller_user_idTousers")
+  marketplace_trans_marketplace_trans_buyer_idTousers  marketplace_trans[] @relation("marketplace_trans_buyer_idTousers")
+  marketplace_trans_marketplace_trans_seller_idTousers marketplace_trans[] @relation("marketplace_trans_seller_idTousers")
+  nft_meta                                             nft_meta[]
+  notifications                                        notifications[]
+  social_comments                                      social_comments[]
+  social_likes                                         social_likes[]
+  social_posts                                         social_posts[]
+  support                                              support[]
+  system_settings_system_settings_created_byTousers    system_settings[]   @relation("system_settings_created_byTousers")
+  system_settings_system_settings_modified_byTousers   system_settings[]   @relation("system_settings_modified_byTousers")
+  team_members                                         team_members[]
+  teams_teams_created_byTousers                        teams[]             @relation("teams_created_byTousers")
+  teams_teams_updated_byTousers                        teams[]             @relation("teams_updated_byTousers")
+  transactions                                         transactions[]
+  user_avatar_inv                                      user_avatar_inv[]
+  user_friends_user_friends_friend_idTousers           user_friends[]      @relation("user_friends_friend_idTousers")
+  user_friends_user_friends_user_idTousers             user_friends[]      @relation("user_friends_user_idTousers")
+  user_messages_user_messages_receiver_idTousers       user_messages[]     @relation("user_messages_receiver_idTousers")
+  user_messages_user_messages_sender_idTousers         user_messages[]     @relation("user_messages_sender_idTousers")
+  user_roles_user_roles_created_byTousers              user_roles[]        @relation("user_roles_created_byTousers")
+  user_roles_user_roles_modified_byTousers             user_roles[]        @relation("user_roles_modified_byTousers")
+  user_scores                                          user_scores[]
+  user_settings                                        user_settings[]
+  user_widgets                                         user_widgets[]
+  user_roles_users_role_idTouser_roles                 user_roles?         @relation("users_role_idTouser_roles", fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
+  video_comments                                       video_comments[]
+  videos                                               videos[]
+}
+
+model video_comments {
+  comment_id    Int       @id @default(autoincrement())
+  video_id      Int?
+  user_id       Int?
+  comment       String?
+  created_date  DateTime? @default(now()) @db.Timestamp(6)
+  modified_date DateTime? @default(now()) @db.Timestamp(6)
+  users         users?    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  videos        videos?   @relation(fields: [video_id], references: [video_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model videos {
+  video_id       Int              @id @default(autoincrement())
+  user_id        Int?
+  url            String?
+  video_comments video_comments[]
+  users          users?           @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
